@@ -75,7 +75,7 @@ MainWindow::~MainWindow()
 void MainWindow::drawing_a_graph(std::function<double(double x)> func, double EPS, Qt::GlobalColor color)
 {
     QVector<double> X, Y;
-    double x_min = 0.0, x_max = 0.0, h = 0.005;
+    double x_min = 0.0, x_max = 0.0, h;
 
     if(ui->radioButton->isChecked())
     {
@@ -102,6 +102,8 @@ void MainWindow::drawing_a_graph(std::function<double(double x)> func, double EP
             x_max = (2.0 * lambda_1) + mu_1;
         }
     }
+
+    h = (x_max - x_min) / 1920;
 
     for(double x = x_min; x <= x_max + h; x += h)
     {
