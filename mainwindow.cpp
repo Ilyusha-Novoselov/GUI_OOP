@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include <iostream>
+#include <QVector>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -10,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->widget->setInteraction(QCP::iRangeDrag, true);
 
     ui->spinBox->setRange(0,1000000);
+
+    ui->doubleSpinBox->setRange(0.0, 1.0);
+    ui->doubleSpinBox->setValue(0.5);
+    ui->doubleSpinBox->setSingleStep(0.01);
 
     QSlider *slider_v = ui->horizontalSlider;
     QSlider *slider_mu = ui->horizontalSlider_2;
@@ -68,8 +75,35 @@ MainWindow::~MainWindow()
 void MainWindow::drawing_a_graph(std::function<double(double x)> func, double EPS, Qt::GlobalColor color)
 {
     QVector<double> X, Y;
-    double h = 0.0001;
-    for(double x = -20; x <= 20 + h; x += h)
+    double x_min = 0.0, x_max = 0.0, h = 0.005;
+
+    if(ui->radioButton->isChecked())
+    {
+        double mu = ui->horizontalSlider_2->value() / 10.0;
+        double lambda = ui->horizontalSlider_3->value() / 10.0;
+        x_min = (-2.0 * lambda) + mu;
+        x_max = (2.0 * lambda) + mu;
+    }
+
+    if(ui->radioButton_2->isChecked())
+    {
+        double mu_1 = ui->horizontalSlider_2->value() / 10.0;
+        double lambda_1 = ui->horizontalSlider_3->value() / 10.0;
+        double mu_2 = ui->horizontalSlider_5->value() / 10.0;
+        double lambda_2 = ui->horizontalSlider_6->value() / 10.0;
+        if(mu_1 < mu_2)
+        {
+            x_min = (-2.0 * lambda_1) + mu_1;
+            x_max = (2.0 * lambda_2) + mu_2;
+        }
+        else
+        {
+            x_min = (-2.0 * lambda_2) + mu_2;
+            x_max = (2.0 * lambda_1) + mu_1;
+        }
+    }
+
+    for(double x = x_min; x <= x_max + h; x += h)
     {
         double y = func(x);
         if(y < EPS)
@@ -79,7 +113,6 @@ void MainWindow::drawing_a_graph(std::function<double(double x)> func, double EP
     }
     auto graph = ui->widget->addGraph();
     graph->addData(X, Y);
-    graph->rescaleAxes();
     QPen pen;
     pen.setColor(color);
     graph->setPen(pen);
@@ -129,81 +162,100 @@ void MainWindow::on_horizontalSlider_3_valueChanged(int value)
 
 void MainWindow::on_pushButton_clicked()
 {
-   const int N = ui->spinBox->value();
-    double EPS_theory = 0.01;
-    double EPS_emp = 1e-10;
-   QVector<double> X, Y;
+   size_t N = ui->spinBox->value();
+   double EPS_theory = 0.01;
+   double EPS_emp = 1e-10;
    ui->widget->clearGraphs();
-
    if(ui->radioButton->isChecked())
    {
         statistics::Parameters par{ui->horizontalSlider->value() / 10.0, ui->horizontalSlider_2->value() / 10.0, ui->horizontalSlider_3->value() / 10.0};
-        statistics::MainDistribution obj(par);
-        drawing_a_graph([&obj](double x) {return obj.get_density_distribution(x);}, EPS_theory, Qt::cyan);
+        statistics::MainDistribution main(par);
+        drawing_a_graph([&main](double x) {return main.get_density_distribution(x);}, EPS_theory, Qt::cyan);
         if(ui->checkBox->isChecked())
         {
-            statistics::EmpericalDistribution emperical(N, obj);
-            auto stdX = emperical.get_X();
-            X =  QVector<double>(stdX.begin(), stdX.end());
-            for(auto x: X)
-                Y.push_back(emperical.get_density_distribution(x));
+            statistics::EmpericalDistribution emperical(N, main);
             drawing_a_graph([&emperical](double x){return emperical.get_density_distribution(x);}, EPS_emp, Qt::green);
-            ui->widget->graph(ui->widget->graphCount() - 2)->rescaleAxes(true);
+
+            auto stdX = emperical.get_X();
+            QVector<double> X = QVector<double>(stdX->begin(), stdX->end());
+            QVector<double> Y_main, Y_emperical;
+            for(auto& x : X)
+            {
+                Y_main.push_back(main.get_density_distribution(x));
+                Y_emperical.push_back(emperical.get_density_distribution(x));
+            }
+            drawing_a_points(X, Y_main, Qt::blue);
+            drawing_a_points(X, Y_emperical, Qt::darkGreen);
             if(ui->checkBox_2->isChecked())
             {
                 statistics::EmpericalDistribution emperical_new(N, emperical);
                 drawing_a_graph([&emperical_new](double x){return emperical_new.get_density_distribution(x);}, EPS_emp, Qt::red);
-                ui->widget->graph(ui->widget->graphCount() - 2)->rescaleAxes(true);
-                ui->widget->graph(ui->widget->graphCount() - 3)->rescaleAxes(true);
             }
         }
-        drawing_a_points(X, Y, Qt::darkGreen);
-        Y.clear();
-        if(X.empty())
-            for(int i = 0; i < N; i++)
-                X.push_back(obj.generate_random_variable());
-        for(auto x: X)
-            Y.push_back(obj.get_density_distribution(x));
-        drawing_a_points(X, Y, Qt::blue);
+        else
+        {
+            QVector<double> X;
+            QVector<double> Y;
+            for(size_t i = 0; i < N; ++i)
+            {
+                auto x = main.generate_random_variable();
+                X.push_back(x);
+                Y.push_back(main.get_density_distribution(x));
+            }
+            drawing_a_points(X, Y, Qt::blue);
+        }
+        ui->widget->graph(0)->rescaleAxes();
+        ui->widget->yAxis->rescale(true);
         ui->widget->replot();
    }
 
+
    if(ui->radioButton_2->isChecked())
    {
+        double p = ui->doubleSpinBox->value();
         statistics::Parameters par_1{ui->horizontalSlider->value() / 10.0, ui->horizontalSlider_2->value() / 10.0, ui->horizontalSlider_3->value() / 10.0};
         statistics::Parameters par_2{ui->horizontalSlider_4->value() / 10.0, ui->horizontalSlider_5->value() / 10.0, ui->horizontalSlider_6->value() / 10.0};
         statistics::MainDistribution main_1(par_1);
         statistics::MainDistribution main_2(par_2);
-        statistics::MixtureDistribution mixture(main_1, main_2, 0.5);
+        statistics::MixtureDistribution mixture(main_1, main_2, p);
         drawing_a_graph([&mixture](double x) {return mixture.get_density_distribution(x);}, EPS_theory, Qt::cyan);
         if(ui->checkBox->isChecked())
         {
             statistics::EmpericalDistribution emperical(N, mixture);
-            auto stdX = emperical.get_X();
-            X =  QVector<double>(stdX.begin(), stdX.end());
-            for(auto x: X)
-                Y.push_back(emperical.get_density_distribution(x));
             drawing_a_graph([&emperical](double x){return emperical.get_density_distribution(x);}, EPS_emp, Qt::green);
-            ui->widget->graph(ui->widget->graphCount() - 2)->rescaleAxes(true);
+
+            auto stdX = emperical.get_X();
+            QVector<double> X = QVector<double>(stdX->begin(), stdX->end());
+            QVector<double> Y_mixture, Y_emperical;
+            for(auto& x : X)
+            {
+                Y_mixture.push_back(mixture.get_density_distribution(x));
+                Y_emperical.push_back(emperical.get_density_distribution(x));
+            }
+            drawing_a_points(X, Y_mixture, Qt::blue);
+            drawing_a_points(X, Y_emperical, Qt::darkGreen);
             if(ui->checkBox_2->isChecked())
             {
                 statistics::EmpericalDistribution emperical_new(N, emperical);
                 drawing_a_graph([&emperical_new](double x){return emperical_new.get_density_distribution(x);}, EPS_emp, Qt::red);
-                ui->widget->graph(ui->widget->graphCount() - 2)->rescaleAxes(true);
-                ui->widget->graph(ui->widget->graphCount() - 3)->rescaleAxes(true);
             }
         }
-        drawing_a_points(X, Y, Qt::darkGreen);
-        Y.clear();
-        if(X.empty())
-            for(int i = 0; i < N; i++)
-                X.push_back(mixture.generate_random_variable());
-        for(auto x: X)
-            Y.push_back(mixture.get_density_distribution(x));
-        drawing_a_points(X, Y, Qt::blue);
+        else
+        {
+            QVector<double> X;
+            QVector<double> Y;
+            for(size_t i = 0; i < N; ++i)
+            {
+                auto x = mixture.generate_random_variable();
+                X.push_back(x);
+                Y.push_back(mixture.get_density_distribution(x));
+            }
+            drawing_a_points(X, Y, Qt::blue);
+        }
+        ui->widget->graph(0)->rescaleAxes();
+        ui->widget->yAxis->rescale(true);
         ui->widget->replot();
    }
-
 }
 
 

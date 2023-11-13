@@ -15,6 +15,7 @@ namespace statistics {
 	public:
 
 		explicit MainDistribution() : _dist_params({ 1.0,0.0,1.0 }) {};
+        explicit MainDistribution(const MainDistribution& other) : _dist_params(other._dist_params) {};
 		explicit MainDistribution(const Parameters &inParams) : _dist_params(inParams) {};
 		explicit MainDistribution(std::ifstream& inFile);
 		MainDistribution(double inV, double inMu, double inLambda) : _dist_params({ inV, inMu, inLambda }) {};
