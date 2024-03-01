@@ -11,7 +11,7 @@
 namespace statistics {
 
 	class MainDistribution {
-		// Класс, реализующий основное распределение
+		// РљР»Р°СЃСЃ, СЂРµР°Р»РёР·СѓСЋС‰РёР№ РѕСЃРЅРѕРІРЅРѕРµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ
 	public:
 
 		explicit MainDistribution() : _dist_params({ 1.0,0.0,1.0 }) {};
@@ -40,13 +40,13 @@ namespace statistics {
 		void read_from_file(std::ifstream& inFile);
 
 		friend std::ostream& operator<<(std::ostream& out, const MainDistribution& dist) {
-			// Оператор вывода текущего состояния объекта
+			// РћРїРµСЂР°С‚РѕСЂ РІС‹РІРѕРґР° С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ РѕР±СЉРµРєС‚Р°
 			out << "{ v = " << dist._dist_params.v << ", mu = " << dist._dist_params.mu << ", lambda = " << dist._dist_params.lambda << " }";
 			return out;
 		};
 
 		MainDistribution& operator=(MainDistribution& dist) {
-			// Проверяем на самоприсваивание
+			// РџСЂРѕРІРµСЂСЏРµРј РЅР° СЃР°РјРѕРїСЂРёСЃРІР°РёРІР°РЅРёРµ
 			if (this == &dist) {
 				return *this;
 			}
@@ -60,7 +60,7 @@ namespace statistics {
 
 	private:
 
-		// Параметры распределения
+		// РџР°СЂР°РјРµС‚СЂС‹ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ
 		Parameters _dist_params;
 
 	};

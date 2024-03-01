@@ -37,7 +37,7 @@ public:
     double generate_random_variable() const;
 
     friend std::ostream& operator<<(std::ostream& out, const EmpericalDistribution& dist) {
-        // Îïåğàòîğ âûâîäà òåêóùåãî ñîñòîÿíèÿ îáúåêòà
+        // ĞĞ¿ĞµÑ€Ğ°Ñ‚Ğ¾Ñ€ Ğ²Ñ‹Ğ²Ğ¾Ğ´Ğ° Ñ‚ĞµĞºÑƒÑ‰ĞµĞ³Ğ¾ ÑĞ¾ÑÑ‚Ğ¾ÑĞ½Ğ¸Ñ Ğ¾Ğ±ÑŠĞµĞºÑ‚Ğ°
         out << "{ N = " << dist._N << std::endl << "x_min: " << *std::min_element(dist._X->begin(), dist._X->end()) << " x_max: " << *std::max_element(dist._X->begin(), dist._X->end()) << std::endl;
         out << std::endl << "function:" << std::endl;
         for (auto f : *dist._function)
@@ -51,7 +51,7 @@ public:
     };
 
     EmpericalDistribution& operator=(EmpericalDistribution& dist) {
-        // Ïğîâåğÿåì íà ñàìîïğèñâàèâàíèå
+        // ĞŸÑ€Ğ¾Ğ²ĞµÑ€ÑĞµĞ¼ Ğ½Ğ° ÑĞ°Ğ¼Ğ¾Ğ¿Ñ€Ğ¸ÑĞ²Ğ°Ğ¸Ğ²Ğ°Ğ½Ğ¸Ğµ
         if (this == &dist) {
             return *this;
         }

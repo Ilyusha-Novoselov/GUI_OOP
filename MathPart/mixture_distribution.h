@@ -5,7 +5,7 @@
 
 namespace statistics {
 	class MixtureDistribution {
-		// Класс, реализующий смесь распределений
+		// РљР»Р°СЃСЃ, СЂРµР°Р»РёР·СѓСЋС‰РёР№ СЃРјРµСЃСЊ СЂР°СЃРїСЂРµРґРµР»РµРЅРёР№
 	public:
 
 		explicit MixtureDistribution() : _main_dist_1(), _main_dist_2(), _p(0.5) {};
@@ -30,13 +30,13 @@ namespace statistics {
 		double generate_random_variable() const;
 
 		friend std::ostream& operator<<(std::ostream& out, const MixtureDistribution& dist) {
-			// Оператор вывода текущего состояния объекта
+			// РћРїРµСЂР°С‚РѕСЂ РІС‹РІРѕРґР° С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ РѕР±СЉРµРєС‚Р°
 			out << "[ f1(x) = " << dist._main_dist_1 << ", f2(x) = " << dist._main_dist_2 << ", p = " << dist._p << " ]";
 			return out;
 		};
 
 		MixtureDistribution& operator=(MixtureDistribution& dist) {
-			// Проверяем на самоприсваивание
+			// РџСЂРѕРІРµСЂСЏРµРј РЅР° СЃР°РјРѕРїСЂРёСЃРІР°РёРІР°РЅРёРµ
 			if (this == &dist) {
 				return *this;
 			}

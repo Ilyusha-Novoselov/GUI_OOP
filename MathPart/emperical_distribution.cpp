@@ -85,15 +85,15 @@ double EmpericalDistribution::get_krutosis() const
 
 std::map<std::pair<double, double>, double> EmpericalDistribution::generate_emperical_density_function()
 {
-    std::map<std::pair<double, double>, double> result; // Сама эмпирическая функция в виде словаря
+    std::map<std::pair<double, double>, double> result; // РЎР°РјР° СЌРјРїРёСЂРёС‡РµСЃРєР°СЏ С„СѓРЅРєС†РёСЏ РІ РІРёРґРµ СЃР»РѕРІР°СЂСЏ
     const int n = _X->size();
     if (n < 2)
         return result;
     std::sort(_X->begin(), _X->end());
     double x_min = *std::min_element(_X->begin(), _X->end());
     double x_max = *std::max_element(_X->begin(), _X->end());
-    int k = ceil(std::log2(n)) + 1; // Кол-во интервалов
-    double h = (x_max - x_min) / k; // Шаг
+    int k = ceil(std::log2(n)) + 1; // РљРѕР»-РІРѕ РёРЅС‚РµСЂРІР°Р»РѕРІ
+    double h = (x_max - x_min) / k; // РЁР°Рі
     for (int i = 0; i < k; i++)
     {
         bool flag = false;
@@ -130,8 +130,8 @@ double EmpericalDistribution::generate_random_variable() const
         sum_p += (emperical.second * h);
         if (r <= sum_p)
         {
-            std::random_device rd; // Инициализация генератора случайных чисел
-            std::mt19937 gen(rd()); // Генератор псевдослучайных чисел
+            std::random_device rd; // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РіРµРЅРµСЂР°С‚РѕСЂР° СЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР»
+            std::mt19937 gen(rd()); // Р“РµРЅРµСЂР°С‚РѕСЂ РїСЃРµРІРґРѕСЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР»
             std::uniform_real_distribution<double> dis(emperical.first.first, emperical.first.second);
             x = dis(gen);
             return x;
